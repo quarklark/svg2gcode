@@ -23,7 +23,7 @@ impl Default for Machine {
                     x: None,
                     y: None,
                     z: Some(-1.0),
-                    f: Some(1000.0),
+                    f: Some(8000.0),
                 }
             ],
             tool_off_action: vec![
@@ -31,7 +31,7 @@ impl Default for Machine {
                     x: None,
                     y: None,
                     z: Some(1.0),
-                    f: Some(1000.0),
+                    f: Some(3000.0),
                 }
             ],
         }

@@ -97,7 +97,7 @@ impl Default for ProgramOptions {
     fn default() -> Self {
         ProgramOptions {
             tolerance: 0.002, // See https://github.com/gnea/grbl/wiki/Grbl-v1.1-Configuration#12--arc-tolerance-mm
-            feedrate: 3000.0,
+            feedrate: 8000.0,
             dpi: 72.0,
         }
     }
