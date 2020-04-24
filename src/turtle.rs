@@ -10,12 +10,13 @@ use lyon_geom::{ArcFlags, CubicBezierSegment, QuadraticBezierSegment, SvgArc};
 /// representation for each operation.  Handles trasforms, scaling, position
 /// offsets, etc.  See https://www.w3.org/TR/SVG/paths.html
 pub struct Turtle {
+    pub tool_on_power: f64,
+    pub mach: Machine,
     curpos: F64Point,
     initpos: F64Point,
     curtran: Transform2D<f64>,
     scaling: Option<Transform2D<f64>>,
     transtack: Vec<Transform2D<f64>>,
-    pub mach: Machine,
     prev_ctrl: Option<F64Point>,
 }
 
@@ -23,6 +24,7 @@ pub struct Turtle {
 impl Default for Turtle {
     fn default() -> Self {
         Self {
+            tool_on_power: 0.0,
             curpos: point(0.0, 0.0),
             initpos: point(0.0, 0.0),
             curtran: Transform2D::identity(),
@@ -81,9 +83,8 @@ impl Turtle {
     }
 
     // TODO: Documentation
-    pub fn close<Z, F>(&mut self, z: Z, f: F) -> Vec<GCode>
+    pub fn close<F>(&mut self, f: F) -> Vec<GCode>
     where
-        Z: Into<Option<f64>>,
         F: Into<Option<f64>>,
     {
         // See https://www.w3.org/TR/SVG/paths.html#Segment-CompletingClosePath
@@ -97,12 +98,12 @@ impl Turtle {
         }
         self.curpos = self.initpos;
         vec![
-            self.mach.tool_on(),
+            self.mach.tool_on(self.tool_on_power),
             self.mach.absolute(),
             vec![GCode::LinearInterpolation {
                 x: self.initpos.x.into(),
                 y: self.initpos.y.into(),
-                z: z.into(),
+                z: None,
                 f: f.into(),
             }],
         ]
@@ -112,11 +113,10 @@ impl Turtle {
     }
 
     // TODO: Documentation
-    pub fn line<X, Y, Z, F>(&mut self, abs: bool, x: X, y: Y, z: Z, f: F) -> Vec<GCode>
+    pub fn line<X, Y, F>(&mut self, abs: bool, x: X, y: Y, f: F) -> Vec<GCode>
     where
         X: Into<Option<f64>>,
         Y: Into<Option<f64>>,
-        Z: Into<Option<f64>>,
         F: Into<Option<f64>>,
     {
         let invtran = self.curtran.inverse().unwrap();
@@ -136,12 +136,12 @@ impl Turtle {
         self.prev_ctrl = None;
 
         vec![
-            self.mach.tool_on(),
+            self.mach.tool_on(self.tool_on_power),
             self.mach.absolute(),
             vec![GCode::LinearInterpolation {
                 x: to.x.into(),
                 y: to.y.into(),
-                z: z.into(),
+                z: None,
                 f: f.into(),
             }],
         ]
@@ -178,7 +178,7 @@ impl Turtle {
         )
         .into();
 
-        vec![self.mach.tool_on(), self.mach.absolute(), cubic]
+        vec![self.mach.tool_on(self.tool_on_power), self.mach.absolute(), cubic]
             .drain(..)
             .flatten()
             .collect()
@@ -385,7 +385,7 @@ impl Turtle {
         self.curpos = last_point.get();
         self.prev_ctrl = None;
 
-        vec![self.mach.tool_on(), self.mach.absolute(), ellipse]
+        vec![self.mach.tool_on(self.tool_on_power), self.mach.absolute(), ellipse]
             .drain(..)
             .flatten()
             .collect()

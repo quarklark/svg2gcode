@@ -176,6 +176,19 @@ fn svg2program(doc: &svgdom::Document, opts: ProgramOptions, mach: Machine) -> P
         if node.is_graphic() && is_start && !is_clip_path {
             match id {
                 ElementId::Path => {
+                    // Quick and dirty calculation of tool power from average 
+                    // of color channels for stroke.
+                    //
+                    // Sets the tool_on_power before drawing the path.
+                    if let Some(&AttributeValue::Color(stroke)) = attrs.get_value(AttributeId::Stroke) {
+                        let r = stroke.red as f64;
+                        let g = stroke.green as f64;
+                        let b = stroke.blue as f64;
+                        t.tool_on_power = 1.0 - ((r+g+b) / (256.0 * 3.0));
+                    } else {
+                        t.tool_on_power = 0.0;
+                    }
+
                     if let Some(&AttributeValue::Path(ref path)) = attrs.get_value(AttributeId::D) {
                         let prefix: String =
                             namestack.iter().fold(String::new(), |mut acc, name| {
@@ -190,16 +203,16 @@ fn svg2program(doc: &svgdom::Document, opts: ProgramOptions, mach: Machine) -> P
                                 PathSegment::MoveTo { abs, x, y } => t.move_to(*abs, *x, *y),
                                 PathSegment::ClosePath { abs } => {
                                     // Ignore abs, should have identical effect: https://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand
-                                    t.close(None, opts.feedrate)
+                                    t.close(opts.feedrate)
                                 }
                                 PathSegment::LineTo { abs, x, y } => {
-                                    t.line(*abs, *x, *y, None, opts.feedrate)
+                                    t.line(*abs, *x, *y, opts.feedrate)
                                 }
                                 PathSegment::HorizontalLineTo { abs, x } => {
-                                    t.line(*abs, *x, None, None, opts.feedrate)
+                                    t.line(*abs, *x, None, opts.feedrate)
                                 }
                                 PathSegment::VerticalLineTo { abs, y } => {
-                                    t.line(*abs, None, *y, None, opts.feedrate)
+                                    t.line(*abs, None, *y, opts.feedrate)
                                 }
                                 PathSegment::CurveTo {
                                     abs,
