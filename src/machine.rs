@@ -66,7 +66,7 @@ impl Machine {
                     // The last item subtracted is the minimum depth the
                     // toolbit will enter the piece when turned on.
                     // This happens with a completely white line.
-                    z: Some(-0.8 * tool_on_power - 0.2),
+                    z: Some((-0.3 * tool_on_power) - 0.1),
                     f: Some(8000.0),
                 }
             ]
