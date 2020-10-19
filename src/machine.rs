@@ -23,7 +23,7 @@ impl Default for Machine {
                     x: None,
                     y: None,
                     z: Some(-1.0),
-                    f: Some(8000.0),
+                    f: Some(3000.0),
                 }
             ],
             tool_off_action: vec![
@@ -67,7 +67,7 @@ impl Machine {
                     // toolbit will enter the piece when turned on.
                     // This happens with a completely white line.
                     z: Some((-0.3 * tool_on_power) - 0.1),
-                    f: Some(8000.0),
+                    f: Some(3000.0),
                 }
             ]
         } else {
